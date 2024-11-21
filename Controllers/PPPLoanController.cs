@@ -85,8 +85,8 @@ namespace ODGAPI.Controllers
                 var url = $"{ppploanurl}{pppresourceId}{urlQS}";
                 _logger.LogInformation("url is " + url);
                 var response = await _httpClient.GetAsync(url);
-                resct.FC = () => {
-    const dispponse.EnsureSuccessStatusCode();
+                
+                response.EnsureSuccessStatusCode();
                 var jsondata = await response.Content.ReadAsStringAsync();
 
                 urlQS = "?$select=count+(0)";
