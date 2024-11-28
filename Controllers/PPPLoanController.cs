@@ -91,9 +91,9 @@ namespace ODGAPI.Controllers
         }
 
         // Add more actions (methods) as needed
-
+        [HttpGet("getwithfilter/{filter}")]
 		[HttpGet(Name = "GetPPPLoan")]
-		public async Task<IActionResult> GetPPPLoanDataAll()
+		public async Task<IActionResult> GetPPPLoanData(string filter)
 		{
             try 
             {
@@ -101,8 +101,13 @@ namespace ODGAPI.Controllers
                 var ppploanurl = _configuration["PPPLoanURL"];
                 var pppresourceId = _configuration["PPPLoanResourceId"];
                 var urlQS = "?$limit=25&$offset=0&$order=loanrange,JobsRetained+DESC";
+                var urlFilter = "";
+                 if(filter.Trim() != "nofilter")
+                {
+                    urlFilter = buildFilterURL(filter);
+                }
 
-                var url = $"{ppploanurl}{pppresourceId}{urlQS}";
+                var url = $"{ppploanurl}{pppresourceId}{urlQS}{urlFilter}";
                 _logger.LogInformation("url is " + url);
                 var response = await _httpClient.GetAsync(url);
                 response.EnsureSuccessStatusCode();
@@ -110,7 +115,7 @@ namespace ODGAPI.Controllers
 
                 urlQS = "?$select=count+(0)";
 
-                url = $"{ppploanurl}{pppresourceId}" + urlQS.Replace("(", "%28").Replace(")", "%29");
+                url = $"{ppploanurl}{pppresourceId}" + urlQS.Replace("(", "%28").Replace(")", "%29") + urlFilter;
 
                 _logger.LogInformation("url count: " + url);
 
