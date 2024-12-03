@@ -49,38 +49,42 @@ namespace ODGAPI.Controllers
             orderByURL = sb.ToString();
             foreach(string u in orderByURI)
             {
-                _logger.LogInformation("-1: " + u.Substring(u.Length - 1));
-                _logger.LogInformation("-2: " + u.Substring(u.Length - 2));
-                if(u.Substring(u.Length - 2) == "_d")
+                if(u.Length>0)
                 {
-                    _logger.LogInformation("if");
-                    if(orderByURL == "&$order=")
+                    _logger.LogInformation("u: " + u + "Length:" + u.Length);
+                    _logger.LogInformation("-1: " + u.Substring(u.Length - 1));
+                    _logger.LogInformation("-2: " + u.Substring(u.Length - 2));
+                    if(u.Substring(u.Length - 2) == "_d")
                     {
-                        sb.Append(u[..^2]);
+                        _logger.LogInformation("in if");
+                        if(orderByURL == "&$order=")
+                        {
+                            sb.Append(u[..^2]);
+                        }
+                        else
+                        {
+                            sb.Append("," + u[..^2]);
+                        }
+                        sb.Append("+DESC");
+
                     }
                     else
                     {
-                        sb.Append("," + u[..^2]);
-                    }
-                    sb.Append("+DESC");
+                        _logger.LogInformation("else");
+                        if(orderByURL == "&$order=")
+                        {
+                            _logger.LogInformation("To append: " + u[..]);
+                            sb.Append(u[..]);
+                        }
+                        else
+                        {                           
+                            _logger.LogInformation("To append: " + u[..]);
+                            sb.Append("," + u[..]);
+                        }
 
-                }
-                else
-                {
-                    _logger.LogInformation("else");
-                    if(orderByURL == "&$order=")
-                    {
-                        _logger.LogInformation("To append: " + u[..]);
-                        sb.Append(u[..]);
                     }
-                    else
-                    {                           
-                        _logger.LogInformation("To append: " + u[..]);
-                        sb.Append("," + u[..]);
-                    }
-
-                }
-                orderByURL = sb.ToString();  
+                    orderByURL = sb.ToString();
+                }  
             } 
                 return orderByURL;
         }
@@ -91,23 +95,33 @@ namespace ODGAPI.Controllers
         }
 
         // Add more actions (methods) as needed
-        [HttpGet("getwithfilter/{filter}")]
-		[HttpGet(Name = "GetPPPLoan")]
-		public async Task<IActionResult> GetPPPLoanData(string filter)
+        [HttpGet("getwithfilter/{filter}/{orderby}")]
+
+		public async Task<IActionResult> GetPPPLoanData(string filter, string orderby)
 		{
             try 
             {
+
                 var securityKey = _configuration["SodaApiKey"];
                 var ppploanurl = _configuration["PPPLoanURL"];
                 var pppresourceId = _configuration["PPPLoanResourceId"];
-                var urlQS = "?$limit=25&$offset=0&$order=loanrange,JobsRetained+DESC";
+                var urlQS = "?$limit=25&$offset=0";
+                var urlDefaultOrderBy = "&$order=loanrange,JobsRetained+DESC";
                 var urlFilter = "";
-                 if(filter.Trim() != "nofilter")
+                var urlOrderBy = "";
+                if(filter.Trim() != "nofilter")
                 {
                     urlFilter = buildFilterURL(filter);
                 }
-
-                var url = $"{ppploanurl}{pppresourceId}{urlQS}{urlFilter}";
+                if(orderby.Trim() != "noorderby")
+                {
+                    urlOrderBy = buildOrderByURL(orderby);
+                }
+                else
+                {
+                    urlOrderBy = urlDefaultOrderBy;
+                }
+                var url = $"{ppploanurl}{pppresourceId}{urlQS}{urlFilter}{urlOrderBy}";
                 _logger.LogInformation("url is " + url);
                 var response = await _httpClient.GetAsync(url);
                 response.EnsureSuccessStatusCode();
