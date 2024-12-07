@@ -163,7 +163,7 @@ namespace ODGAPI.Controllers
                 var ppploanurl = _configuration["PPPLoanURL"];
                 var pppresourceId = _configuration["PPPLoanResourceId"];
 
-                var urlQS = $"?$limit={pageSize}&$offset={page}"; //&$order=loanrange,JobsRetained+DESC";
+                var urlQS = $"?$limit={pageSize}&$offset={page * pageSize}"; //&$order=loanrange,JobsRetained+DESC";
                 _logger.LogInformation("urlQS: " + urlQS);
                 var url = $"{ppploanurl}{pppresourceId}";
                 StringBuilder sb = new StringBuilder(url);
